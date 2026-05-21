@@ -5,23 +5,18 @@ const app = express();
 
 const PORT = process.env.PORT || 4000;
 
-// Connexion MongoDB
 connectDB();
 
-// Middleware
 app.use(express.json());
 
-// Route racine
 app.get("/", (req, res) => {
   res.json({ message: "Serveur Express fonctionne !" });
 });
 
-// Test route
 app.get("/api/test", (req, res) => {
   res.json({ message: "Serveur Express fonctionne !" });
 });
 
-// Démarrage du serveur
 app.listen(PORT, () => {
   console.log(`Serveur running on http://localhost:${PORT}`);
 });
