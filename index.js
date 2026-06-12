@@ -7,7 +7,10 @@ const PORT = process.env.PORT || 4000;
 
 connectDB();
 
+const path = require("path");
+
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -23,9 +26,11 @@ app.use((req, res, next) => {
 });
 
 const authRoutes = require("./routes/auth");
+const bookRoutes = require("./routes/books");
 const authMiddleware = require("./middleware/auth");
 
 app.use("/api/auth", authRoutes);
+app.use("/api/books", bookRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Serveur Express fonctionne !" });
