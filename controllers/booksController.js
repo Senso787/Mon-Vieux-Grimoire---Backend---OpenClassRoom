@@ -1,4 +1,21 @@
+const fs = require("fs");
+const path = require("path");
 const Book = require("../models/Book");
+
+const deleteUploadedFile = (imageUrl) => {
+  try {
+    if (!imageUrl) return;
+    const filename = imageUrl.split("/uploads/")[1];
+    if (filename) {
+      const filepath = path.join(__dirname, "../uploads", filename);
+      if (fs.existsSync(filepath)) {
+        fs.unlinkSync(filepath);
+      }
+    }
+  } catch (error) {
+    console.error("Erreur lors de la suppression du fichier uploadé:", error);
+  }
+};
 
 const parseBookData = (req) => {
   if (req.body.book) {
@@ -88,6 +105,7 @@ exports.updateBook = async (req, res) => {
       genre: bookData.genre ?? book.genre,
     };
     if (req.file) {
+      deleteUploadedFile(book.imageUrl);
       updatedData.imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
     }
     const updatedBook = await Book.findByIdAndUpdate(
@@ -116,6 +134,7 @@ exports.deleteBook = async (req, res) => {
     if (book.userId !== req.user.userId) {
       return res.status(403).json({ message: "Accès refusé." });
     }
+    deleteUploadedFile(book.imageUrl);
     await Book.findByIdAndDelete(req.params.id);
     res.json({ message: "Livre supprimé." });
   } catch (error) {
@@ -133,7 +152,7 @@ exports.rateBook = async (req, res) => {
     if (!book) {
       return res.status(404).json({ message: "Livre introuvable." });
     }
-    const grade = parseInt(rating, 10);
+    const grade = parseFloat(rating);
     if (Number.isNaN(grade) || grade < 0 || grade > 5) {
       return res.status(400).json({ message: "Note invalide." });
     }
