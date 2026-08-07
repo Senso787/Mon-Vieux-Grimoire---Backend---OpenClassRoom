@@ -1,6 +1,22 @@
 const fs = require("fs");
 const path = require("path");
+const sharp = require("sharp");
 const Book = require("../models/Book");
+
+const optimizeImage = async (filePath) => {
+  try {
+    const optimizedPath = filePath;
+    await sharp(filePath)
+      .resize(400, 600, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .jpeg({ quality: 80 })
+      .toFile(optimizedPath);
+  } catch (error) {
+    console.error("Erreur lors de l'optimisation de l'image:", error);
+  }
+};
 
 const deleteUploadedFile = (imageUrl) => {
   try {
@@ -73,6 +89,8 @@ exports.createBook = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: "Image manquante." });
     }
+    const filePath = path.join(__dirname, "../uploads", req.file.filename);
+    await optimizeImage(filePath);
     const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
     const book = await Book.create({
       ...bookData,
@@ -106,6 +124,8 @@ exports.updateBook = async (req, res) => {
     };
     if (req.file) {
       deleteUploadedFile(book.imageUrl);
+      const filePath = path.join(__dirname, "../uploads", req.file.filename);
+      await optimizeImage(filePath);
       updatedData.imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
     }
     const updatedBook = await Book.findByIdAndUpdate(
