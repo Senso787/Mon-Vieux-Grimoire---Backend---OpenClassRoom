@@ -76,6 +76,25 @@ exports.getBookById = async (req, res) => {
   }
 };
 
+// Renvoie un livre uniquement si l'utilisateur connecté en est le propriétaire, pour alimenter le formulaire de modification
+exports.getBookForEdit = async (req, res) => {
+  try {
+    const book = await Book.findById(req.params.id);
+    if (!book) {
+      return res.status(404).json({ message: "Livre introuvable." });
+    }
+    if (book.userId !== req.user.userId) {
+      return res.status(403).json({ message: "Accès refusé." });
+    }
+    res.json(book);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Erreur serveur lors de la récupération du livre." });
+  }
+};
+
 // Renvoie les 3 livres les mieux notés pour la page d'accueil
 exports.getBestRatedBooks = async (req, res) => {
   try {

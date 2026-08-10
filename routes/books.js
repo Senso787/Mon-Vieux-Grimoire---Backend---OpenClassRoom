@@ -4,6 +4,7 @@ const path = require("path");
 const {
   getAllBooks,
   getBookById,
+  getBookForEdit,
   getBestRatedBooks,
   createBook,
   updateBook,
@@ -43,6 +44,8 @@ const router = express.Router();
 router.get("/bestrating", getBestRatedBooks);
 router.get("/:id", getBookById);
 router.get("/", getAllBooks);
+// Route dédiée à l'édition: vérifie que l'appelant est bien le propriétaire avant de renvoyer les données
+router.get("/:id/edit", authMiddleware, getBookForEdit);
 // Création, modification, suppression et notation nécessitent d'être connecté
 router.post("/", authMiddleware, upload.single("image"), createBook);
 router.put("/:id", authMiddleware, upload.single("image"), updateBook);
