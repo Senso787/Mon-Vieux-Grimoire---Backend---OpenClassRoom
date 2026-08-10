@@ -5,6 +5,7 @@ const User = require("../models/User");
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Vérifie via DNS que le domaine de l'email a bien un serveur mail (MX), pour écarter les faux domaines
 const domainAcceptsMail = async (email) => {
   const domain = email.split("@")[1];
   try {
@@ -15,6 +16,7 @@ const domainAcceptsMail = async (email) => {
   }
 };
 
+// Inscription d'un nouvel utilisateur avec validation de l'email et hachage du mot de passe
 exports.signup = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -24,12 +26,9 @@ exports.signup = async (req, res) => {
     return res.status(400).json({ message: "Format d'email invalide." });
   }
   if (!(await domainAcceptsMail(email))) {
-    return res
-      .status(400)
-      .json({
-        message:
-          "Le domaine de l'email n'existe pas ou n'accepte pas d'emails.",
-      });
+    return res.status(400).json({
+      message: "Le domaine de l'email n'existe pas ou n'accepte pas d'emails.",
+    });
   }
 
   try {
@@ -38,6 +37,7 @@ exports.signup = async (req, res) => {
       return res.status(409).json({ message: "Cet utilisateur existe déjà." });
     }
 
+    // Le mot de passe n'est jamais stocké en clair, uniquement son hash
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ email, password: hashedPassword });
 
@@ -48,6 +48,7 @@ exports.signup = async (req, res) => {
   }
 };
 
+// Connexion d'un utilisateur existant, renvoie un token JWT valable 24h
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -65,6 +66,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Identifiants invalides." });
     }
 
+    // Le token contient l'id et l'email pour identifier l'utilisateur sur les routes protégées
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET || "defaultsecret",

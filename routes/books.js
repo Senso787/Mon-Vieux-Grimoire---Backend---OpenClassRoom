@@ -12,6 +12,7 @@ const {
 } = require("../controllers/booksController");
 const authMiddleware = require("../middleware/auth");
 
+// Configuration de l'upload d'image: nom de fichier unique et dossier de stockage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, "../uploads"));
@@ -22,6 +23,7 @@ const storage = multer.diskStorage({
   },
 });
 
+// Limite la taille et le type des fichiers acceptés pour éviter les abus
 const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 },
@@ -37,9 +39,11 @@ const upload = multer({
 
 const router = express.Router();
 
+// Lecture des livres accessible à tous, sans authentification
 router.get("/bestrating", getBestRatedBooks);
 router.get("/:id", getBookById);
 router.get("/", getAllBooks);
+// Création, modification, suppression et notation nécessitent d'être connecté
 router.post("/", authMiddleware, upload.single("image"), createBook);
 router.put("/:id", authMiddleware, upload.single("image"), updateBook);
 router.delete("/:id", authMiddleware, deleteBook);

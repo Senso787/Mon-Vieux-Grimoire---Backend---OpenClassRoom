@@ -3,6 +3,7 @@ const path = require("path");
 const sharp = require("sharp");
 const Book = require("../models/Book");
 
+// Redimensionne et compresse l'image uploadée pour limiter son poids
 const optimizeImage = async (filePath) => {
   try {
     const optimizedPath = filePath;
@@ -18,6 +19,7 @@ const optimizeImage = async (filePath) => {
   }
 };
 
+// Supprime le fichier image sur le disque quand un livre est modifié ou supprimé
 const deleteUploadedFile = (imageUrl) => {
   try {
     if (!imageUrl) return;
@@ -33,6 +35,7 @@ const deleteUploadedFile = (imageUrl) => {
   }
 };
 
+// Le frontend envoie parfois les données du livre en JSON dans un champ "book" (cas des formulaires multipart avec image)
 const parseBookData = (req) => {
   if (req.body.book) {
     try {
@@ -44,6 +47,7 @@ const parseBookData = (req) => {
   return req.body;
 };
 
+// Récupère tous les livres, du plus récent au plus ancien
 exports.getAllBooks = async (req, res) => {
   try {
     const books = await Book.find().sort({ createdAt: -1 });
@@ -56,6 +60,7 @@ exports.getAllBooks = async (req, res) => {
   }
 };
 
+// Récupère un livre précis, accessible publiquement (page de détail/notation)
 exports.getBookById = async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
@@ -71,6 +76,7 @@ exports.getBookById = async (req, res) => {
   }
 };
 
+// Renvoie les 3 livres les mieux notés pour la page d'accueil
 exports.getBestRatedBooks = async (req, res) => {
   try {
     const books = await Book.find().sort({ averageRating: -1 }).limit(3);
@@ -83,6 +89,7 @@ exports.getBestRatedBooks = async (req, res) => {
   }
 };
 
+// Crée un livre. Le propriétaire (userId) vient toujours du token, jamais du corps de la requête
 exports.createBook = async (req, res) => {
   try {
     const bookData = parseBookData(req);
@@ -94,7 +101,7 @@ exports.createBook = async (req, res) => {
     const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
     const book = await Book.create({
       ...bookData,
-      userId: bookData.userId || req.user.userId,
+      userId: req.user.userId,
       imageUrl,
     });
     res.status(201).json(book);
@@ -106,12 +113,14 @@ exports.createBook = async (req, res) => {
   }
 };
 
+// Modifie un livre existant, réservé au créateur du livre
 exports.updateBook = async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
     if (!book) {
       return res.status(404).json({ message: "Livre introuvable." });
     }
+    // Seul le créateur du livre peut le modifier, même avec un lien partagé
     if (book.userId !== req.user.userId) {
       return res.status(403).json({ message: "Accès refusé." });
     }
@@ -145,6 +154,7 @@ exports.updateBook = async (req, res) => {
   }
 };
 
+// Supprime un livre et son image, réservé au créateur du livre
 exports.deleteBook = async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
@@ -165,6 +175,7 @@ exports.deleteBook = async (req, res) => {
   }
 };
 
+// Ajoute la note d'un utilisateur (une seule fois par livre) et recalcule la moyenne
 exports.rateBook = async (req, res) => {
   try {
     const { rating } = req.body;
@@ -186,6 +197,7 @@ exports.rateBook = async (req, res) => {
     const average =
       book.ratings.reduce((sum, elt) => sum + elt.grade, 0) /
       book.ratings.length;
+    // Arrondi à 1 décimale pour éviter les nombres à rallonge (ex 2.6666666)
     book.averageRating = Math.round(average * 10) / 10;
     await book.save();
     res.json(book);

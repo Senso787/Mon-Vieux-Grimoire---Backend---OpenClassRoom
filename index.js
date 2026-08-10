@@ -10,8 +10,10 @@ connectDB();
 const path = require("path");
 
 app.use(express.json());
+// Les images uploadées sont servies directement en fichiers statiques
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// Autorise le frontend (localhost:3000) à appeler cette API malgré la politique CORS du navigateur
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header(
@@ -40,6 +42,7 @@ app.get("/api/test", (req, res) => {
   res.json({ message: "Serveur Express fonctionne !" });
 });
 
+// Route de test pour vérifier que l'authentification fonctionne
 app.get("/api/protected", authMiddleware, (req, res) => {
   res.json({ message: "Route protégée accessible", userId: req.user.userId });
 });

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Un utilisateur est identifié par son email unique, le mot de passe est stocké déjà haché
 const userSchema = new mongoose.Schema(
   {
     email: {

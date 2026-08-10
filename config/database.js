@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Se connecte à MongoDB et arrête le serveur si la connexion échoue
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(

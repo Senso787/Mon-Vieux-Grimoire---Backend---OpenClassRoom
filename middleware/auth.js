@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 
+// Middleware qui protège une route en exigeant un token JWT valide dans le header Authorization
 module.exports = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -12,6 +13,7 @@ module.exports = (req, res, next) => {
       token,
       process.env.JWT_SECRET || "defaultsecret",
     );
+    // Les infos de l'utilisateur sont attachées à la requête pour les contrôleurs suivants
     req.user = { userId: payload.userId, email: payload.email };
     next();
   } catch (error) {

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Un livre appartient à l'utilisateur qui l'a créé (userId) et regroupe toutes les notes reçues
 const bookSchema = new mongoose.Schema(
   {
     userId: {
@@ -26,6 +27,7 @@ const bookSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // Chaque utilisateur ne peut noter le livre qu'une seule fois
     ratings: [
       {
         userId: {
@@ -41,6 +43,7 @@ const bookSchema = new mongoose.Schema(
     averageRating: {
       type: Number,
       default: 0,
+      // Arrondi automatique à 1 décimale, quel que soit l'endroit où la valeur est assignée
       set: (value) => Math.round(value * 10) / 10,
     },
   },
