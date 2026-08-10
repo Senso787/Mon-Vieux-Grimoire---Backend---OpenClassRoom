@@ -1,11 +1,35 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const dns = require("dns/promises");
 const User = require("../models/User");
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const domainAcceptsMail = async (email) => {
+  const domain = email.split("@")[1];
+  try {
+    const mxRecords = await dns.resolveMx(domain);
+    return mxRecords.length > 0;
+  } catch (error) {
+    return false;
+  }
+};
 
 exports.signup = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ message: "Email et mot de passe requis." });
+  }
+  if (!EMAIL_REGEX.test(email)) {
+    return res.status(400).json({ message: "Format d'email invalide." });
+  }
+  if (!(await domainAcceptsMail(email))) {
+    return res
+      .status(400)
+      .json({
+        message:
+          "Le domaine de l'email n'existe pas ou n'accepte pas d'emails.",
+      });
   }
 
   try {
