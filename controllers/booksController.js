@@ -183,9 +183,10 @@ exports.rateBook = async (req, res) => {
       return res.status(409).json({ message: "Vous avez déjà noté ce livre." });
     }
     book.ratings.push({ userId: req.user.userId, grade });
-    book.averageRating =
+    const average =
       book.ratings.reduce((sum, elt) => sum + elt.grade, 0) /
       book.ratings.length;
+    book.averageRating = Math.round(average * 10) / 10;
     await book.save();
     res.json(book);
   } catch (error) {

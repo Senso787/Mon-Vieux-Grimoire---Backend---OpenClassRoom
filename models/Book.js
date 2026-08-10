@@ -41,6 +41,7 @@ const bookSchema = new mongoose.Schema(
     averageRating: {
       type: Number,
       default: 0,
+      set: (value) => Math.round(value * 10) / 10,
     },
   },
   { timestamps: true },
