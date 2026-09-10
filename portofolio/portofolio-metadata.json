@@ -1,0 +1,20 @@
+﻿{
+    "displayOrder":  1,
+    "title":  {
+                  "en":  "Backend API for Mon Vieux Grimoire",
+                  "fr":  "API backend pour Mon Vieux Grimoire"
+              },
+    "technologies":  [
+                         "Node.js",
+                         "Express.js",
+                         "MongoDB",
+                         "Mongoose",
+                         "JWT",
+                         "bcrypt",
+                         "CRUD",
+                         "Multer",
+                         "Sharp",
+                         "Green Code",
+                         "MVC"
+                     ]
+}
